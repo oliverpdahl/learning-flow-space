@@ -1,7 +1,15 @@
 import firebase from 'firebase/app'
 
 // firebase config can be found in your firebase project
-const firebaseConfig = {}
+const firebaseConfig = {
+  apiKey: 'AIzaSyBfQLROCJiSRrM892NvqCrNU-Y5ToPmRy0',
+  authDomain: 'learning-flow-space.firebaseapp.com',
+  projectId: 'learning-flow-space',
+  storageBucket: 'learning-flow-space.appspot.com',
+  messagingSenderId: '348219017167',
+  appId: '1:348219017167:web:3b93716d272395aa55b4ba',
+  measurementId: 'G-FPTDG5HZG4'
+}
 
 firebase.initializeApp(firebaseConfig)
 if (process.env.NODE_ENV !== 'production') {
