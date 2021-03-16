@@ -14,7 +14,7 @@ const Wrapper = ({
   marginBottom = 5
 }: Props) => {
   return (
-    <Container maxWidth={maxWidth}>
+    <Container maxWidth={maxWidth} style={{ flex: 1, height: '100%' }}>
       <Box mt={marginTop} mb={marginBottom}>
         {children}
       </Box>
