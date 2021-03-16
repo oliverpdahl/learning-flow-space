@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Route, Switch, Redirect } from 'react-router'
 import Signin from './Signin'
 import Home from './Home'
@@ -30,7 +30,7 @@ const App = () => {
     <Switch>
       <Route path={routes.signin} children={<Signin />} />
       <Route path={routes.home} children={<Home />} />
-      <Redirect to={routes.home} />
+      <Redirect to={routes.typing} />
     </Switch>
   )
 }
