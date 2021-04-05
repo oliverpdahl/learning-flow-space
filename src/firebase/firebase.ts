@@ -1,5 +1,5 @@
 import firebase from 'firebase/app'
-
+require('firebase/auth')
 // firebase config can be found in your firebase project
 const firebaseConfig = {
   apiKey: 'AIzaSyBfQLROCJiSRrM892NvqCrNU-Y5ToPmRy0',
