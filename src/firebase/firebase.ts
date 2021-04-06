@@ -1,9 +1,11 @@
 import firebase from 'firebase/app'
 require('firebase/auth')
+require('firebase/database')
 // firebase config can be found in your firebase project
 const firebaseConfig = {
   apiKey: 'AIzaSyBfQLROCJiSRrM892NvqCrNU-Y5ToPmRy0',
   authDomain: 'learning-flow-space.firebaseapp.com',
+  databaseURL: 'https://learning-flow-space-default-rtdb.firebaseio.com',
   projectId: 'learning-flow-space',
   storageBucket: 'learning-flow-space.appspot.com',
   messagingSenderId: '348219017167',

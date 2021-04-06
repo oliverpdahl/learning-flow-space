@@ -4,10 +4,25 @@ import routes from './routes'
 import Wrapper from '../components/Wrapper'
 import AppBar from '../components/AppBar'
 import { useForm } from 'react-hook-form'
+import firebase from '../firebase'
 import formErrorMessages from '../utils/formErrorMessages'
 
 const Home = () => {
   const { register, errors, handleSubmit, reset } = useForm<{ name: string }>()
+
+  const createSession = () => {
+    const sessionRef = firebase.database().ref('Session')
+    const now = new Date().getTime()
+    var userID = firebase.auth().currentUser?.uid
+    var userName = firebase.auth().currentUser?.displayName
+    const session = {
+      exists: true,
+      time: now,
+      user: userID
+    }
+
+    sessionRef.push(session)
+  }
 
   return (
     <>
@@ -26,6 +41,7 @@ const Home = () => {
         }
       />
       <Wrapper>
+        <Button onClick={createSession}>CLICKFORSESH</Button>
         <Typography paragraph variant='h5'>
           Welcome to your new app!
         </Typography>
