@@ -5,23 +5,36 @@ import Wrapper from '../components/Wrapper'
 import AppBar from '../components/AppBar'
 import { useForm } from 'react-hook-form'
 import firebase from '../firebase'
+import { useEffect, useState } from 'react'
 import formErrorMessages from '../utils/formErrorMessages'
 
 const Home = () => {
   const { register, errors, handleSubmit, reset } = useForm<{ name: string }>()
+  const [sessionStart, setSessionStart] = useState(0)
+
+  useEffect(() => {
+    createSession()
+  }, [])
 
   const createSession = () => {
     const sessionRef = firebase.database().ref('Session')
     const now = new Date().getTime()
-    var userID = firebase.auth().currentUser?.uid
-    var userName = firebase.auth().currentUser?.displayName
     const session = {
-      exists: true,
       time: now,
-      user: userID
+      userID: firebase.auth().currentUser?.uid || '',
+      userName: firebase.auth().currentUser?.displayName || ''
     }
-
     sessionRef.push(session)
+  }
+
+  const createClick = () => {
+    const interactRef = firebase.database().ref('Interact')
+    const now = new Date().getTime()
+    const interact = {
+      time: now,
+      type: 'click'
+    }
+    interactRef.push(interact)
   }
 
   return (
@@ -40,44 +53,47 @@ const Home = () => {
           </Button>
         }
       />
-      <Wrapper>
-        <Button onClick={createSession}>CLICKFORSESH</Button>
-        <Typography paragraph variant='h5'>
-          Welcome to your new app!
-        </Typography>
-
-        <Typography paragraph variant='h5'>
-          Don't forget to configure your firebase settings in{' '}
-          <code>/src/firebase/firebase.ts</code>
-        </Typography>
-
-        <Box mt={6}>
-          <Typography paragraph>
-            This is an example form using react-hook-form
+      <div onClick={createClick}>
+        <Wrapper>
+          {sessionStart === 0 ? '' : sessionStart}
+          <Button onClick={createSession}>CLICKFORSESH</Button>
+          <Typography paragraph variant='h5'>
+            Welcome to your new app!
           </Typography>
-        </Box>
-        <form
-          onSubmit={handleSubmit(vals => {
-            console.log(vals)
-            reset()
-          })}
-        >
-          <TextField
-            label='Enter your name'
-            name='name'
-            variant='outlined'
-            fullWidth
-            inputRef={register({
-              required: formErrorMessages.required
+
+          <Typography paragraph variant='h5'>
+            Don't forget to configure your firebase settings in{' '}
+            <code>/src/firebase/firebase.ts</code>
+          </Typography>
+
+          <Box mt={6}>
+            <Typography paragraph>
+              This is an example form using react-hook-form
+            </Typography>
+          </Box>
+          <form
+            onSubmit={handleSubmit(vals => {
+              console.log(vals)
+              reset()
             })}
-            error={!!errors.name}
-            helperText={errors.name?.message || ' '}
-          />
-          <Button type='submit' color='primary'>
-            Submit
-          </Button>
-        </form>
-      </Wrapper>
+          >
+            <TextField
+              label='Enter your name'
+              name='name'
+              variant='outlined'
+              fullWidth
+              inputRef={register({
+                required: formErrorMessages.required
+              })}
+              error={!!errors.name}
+              helperText={errors.name?.message || ' '}
+            />
+            <Button type='submit' color='primary'>
+              Submit
+            </Button>
+          </form>
+        </Wrapper>
+      </div>
     </>
   )
 }
