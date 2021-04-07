@@ -12,10 +12,6 @@ const Home = () => {
   const { register, errors, handleSubmit, reset } = useForm<{ name: string }>()
   const [sessionStart, setSessionStart] = useState(0)
 
-  useEffect(() => {
-    createSession()
-  }, [])
-
   const createSession = () => {
     const sessionRef = firebase.database().ref('Session')
     const now = new Date().getTime()
@@ -37,6 +33,16 @@ const Home = () => {
     interactRef.push(interact)
   }
 
+  const createKeyDown = () => {
+    const interactRef = firebase.database().ref('Interact')
+    const now = new Date().getTime()
+    const interact = {
+      time: now,
+      type: 'keydown'
+    }
+    interactRef.push(interact)
+  }
+
   return (
     <>
       <AppBar
@@ -53,10 +59,9 @@ const Home = () => {
           </Button>
         }
       />
-      <div onClick={createClick}>
+      <div onClick={createClick} onKeyDown={createKeyDown} tabIndex={0}>
         <Wrapper>
           {sessionStart === 0 ? '' : sessionStart}
-          <Button onClick={createSession}>CLICKFORSESH</Button>
           <Typography paragraph variant='h5'>
             Welcome to your new app!
           </Typography>
