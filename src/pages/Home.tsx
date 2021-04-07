@@ -1,4 +1,10 @@
-import { Box, Typography, TextField, Button } from '@material-ui/core'
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  ButtonGroup
+} from '@material-ui/core'
 import { Link } from 'react-router-dom'
 import routes from './routes'
 import Wrapper from '../components/Wrapper'
@@ -17,11 +23,12 @@ const Home = () => {
   const [sessionID, setSessionID] = useState('')
   let stringArray: string[] = []
   const [focusedUsers, setFocusedUsers] = useState(stringArray)
+  const [currentTool, setCurrentTool] = useState('typing')
 
   const sessionRef = firebase.database().ref('Session')
   const interactRef = firebase.database().ref('Interact')
 
-  const focusThreshold = 1000
+  const focusThreshold = 5000
 
   const updateFocusedState = () => {
     if (!!sessionID) {
@@ -102,6 +109,25 @@ const Home = () => {
       }
       setFocusLock(true)
     })
+    /*window.addEventListener('keydown', createKeyDown)
+    window.addEventListener('click', createClick)
+
+    var myConfObj = {
+      iframeMouseOver : false
+    }
+    window.addEventListener('blur',function(){
+      if(myConfObj.iframeMouseOver){
+        console.log('Wow! Iframe Click!');
+      }
+    });
+    
+    document.getElementById('embeddedTool')?.addEventListener('mouseover',function(){
+       myConfObj.iframeMouseOver = true;
+    });
+    document.getElementById('embeddedTool')?.addEventListener('mouseout',function(){
+        myConfObj.iframeMouseOver = false;
+    });*/
+
     return () => {
       clearInterval(timer)
     }
@@ -167,10 +193,50 @@ const Home = () => {
     return focusedUserString
   }
 
+  const setToolToTyping = () => {
+    setCurrentTool('typing')
+  }
+
+  const setToolToSketch = () => {
+    setCurrentTool('sketch')
+  }
+
+  const embedTool = () => {
+    if (currentTool === 'sketch') {
+      return (
+        <iframe
+          id='embeddedTool'
+          src='https://sketch.io/sketchpad'
+          style={{
+            height: '75vh',
+            left: '0',
+            position: 'relative',
+            top: '0',
+            width: '100%'
+          }}
+        />
+      )
+    } else {
+      return (
+        <iframe
+          id='embeddedTool'
+          src='https://www.typing.com/student/lessons'
+          style={{
+            height: '75vh',
+            left: '0',
+            position: 'relative',
+            top: '0',
+            width: '100%'
+          }}
+        />
+      )
+    }
+  }
+
   return (
     <>
       <AppBar
-        title='fullstrapp'
+        title=''
         actions={
           <Button
             color='primary'
@@ -183,7 +249,13 @@ const Home = () => {
           </Button>
         }
       />
-      <div onClick={createClick} onKeyDown={createKeyDown} tabIndex={0}>
+      <div
+        id='wrapperDiv'
+        tabIndex={0}
+        onClick={createClick}
+        onKeyDown={createKeyDown}
+        style={{ width: '100%', height: '100%' }}
+      >
         <Wrapper>
           <Typography paragraph>{getFocusedUserString()}</Typography>
           <Typography paragraph>
@@ -194,6 +266,20 @@ const Home = () => {
           <Typography paragraph>
             {focusedState ? 'FOCUSED' : 'FOCUS UP NOW!!'}
           </Typography>
+          <ButtonGroup
+            style={{ width: '100%' }}
+            variant='contained'
+            size='large'
+            color='primary'
+          >
+            <Button style={{ width: '50%' }} onClick={setToolToTyping}>
+              Typing
+            </Button>
+            <Button style={{ width: '50%' }} onClick={setToolToSketch}>
+              Sketchpad
+            </Button>
+          </ButtonGroup>
+          {embedTool()}
         </Wrapper>
       </div>
     </>
