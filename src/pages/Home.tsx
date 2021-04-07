@@ -7,21 +7,67 @@ import { useForm } from 'react-hook-form'
 import firebase from '../firebase'
 import { useEffect, useState } from 'react'
 import formErrorMessages from '../utils/formErrorMessages'
+import { noWait } from 'recoil'
 
 const Home = () => {
   const { register, errors, handleSubmit, reset } = useForm<{ name: string }>()
   const [sessionStart, setSessionStart] = useState(0)
   const [focusedState, setFocusedState] = useState(false)
+  const [sessionID, setSessionID] = useState()
+
+  const sessionRef = firebase.database().ref('Session')
+  const interactRef = firebase.database().ref('Interact')
+
+  const focusThreshold = 1000
+
+  /*const applyFocusToSession = () => {
+    sessionRef.child(sessionID).update({'focused': focusedState})
+  }*/
+
+  const checkFocus = () => {
+    interactRef
+      .orderByChild('userID')
+      .equalTo(firebase.auth().currentUser?.uid || '')
+      .limitToLast(1)
+      .on('value', snapshot => {
+        const interacts = snapshot.val()
+        const lasttwointeracts = []
+        for (let id in interacts) {
+          lasttwointeracts.push({ id, ...interacts[id] })
+        }
+        if (!!lasttwointeracts[0]) {
+          const t1 = lasttwointeracts[0].time
+          const now = new Date().getTime()
+          const dif = now - t1
+          if (dif > focusThreshold) {
+            setFocusedState(false)
+          } else {
+            setFocusedState(true)
+          }
+        } else {
+          setFocusedState(false)
+        }
+      })
+  }
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      checkFocus()
+    }, 1000)
+    return () => {
+      clearInterval(timer)
+    }
+  })
 
   const createSession = () => {
-    const sessionRef = firebase.database().ref('Session')
     const now = new Date().getTime()
     const session = {
       time: now,
+      focused: false,
       userID: firebase.auth().currentUser?.uid || '',
       userName: firebase.auth().currentUser?.displayName || ''
     }
-    sessionRef.push(session)
+    var seshref = sessionRef.push(session)
     return now
   }
 
@@ -32,29 +78,36 @@ const Home = () => {
   }
 
   const createClick = () => {
-    const interactRef = firebase.database().ref('Interact')
     const now = new Date().getTime()
 
     checkSetSession()
 
     const interact = {
       time: now,
-      type: 'click'
+      type: 'click',
+      userID: firebase.auth().currentUser?.uid || '',
+      userName: firebase.auth().currentUser?.displayName || ''
     }
     interactRef.push(interact)
   }
 
   const createKeyDown = () => {
-    const interactRef = firebase.database().ref('Interact')
     const now = new Date().getTime()
 
     checkSetSession()
 
     const interact = {
       time: now,
-      type: 'keydown'
+      type: 'keydown',
+      userID: firebase.auth().currentUser?.uid || '',
+      userName: firebase.auth().currentUser?.displayName || ''
     }
     interactRef.push(interact)
+  }
+
+  const sessionStartAsDate = () => {
+    const date = new Date(sessionStart)
+    return date.toString()
   }
 
   return (
@@ -75,7 +128,14 @@ const Home = () => {
       />
       <div onClick={createClick} onKeyDown={createKeyDown} tabIndex={0}>
         <Wrapper>
-          {sessionStart === 0 ? '' : sessionStart}
+          <Typography paragraph>
+            {sessionStart === 0
+              ? ''
+              : 'Session Started at ' + sessionStartAsDate()}
+          </Typography>
+          <Typography paragraph>
+            {focusedState ? 'FOCUSED' : 'FOCUS UP NOW!!'}
+          </Typography>
           <Typography paragraph variant='h5'>
             Welcome to your new app!
           </Typography>
