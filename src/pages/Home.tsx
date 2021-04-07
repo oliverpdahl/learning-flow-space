@@ -17,7 +17,6 @@ const Home = () => {
   const [sessionID, setSessionID] = useState('')
   let stringArray: string[] = []
   const [focusedUsers, setFocusedUsers] = useState(stringArray)
-  const [focusedUsersString, setFocusedUsersString] = useState('')
 
   const sessionRef = firebase.database().ref('Session')
   const interactRef = firebase.database().ref('Interact')
