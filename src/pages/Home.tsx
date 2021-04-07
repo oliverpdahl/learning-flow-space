@@ -11,6 +11,7 @@ import formErrorMessages from '../utils/formErrorMessages'
 const Home = () => {
   const { register, errors, handleSubmit, reset } = useForm<{ name: string }>()
   const [sessionStart, setSessionStart] = useState(0)
+  const [focusedState, setFocusedState] = useState(false)
 
   const createSession = () => {
     const sessionRef = firebase.database().ref('Session')
@@ -21,11 +22,21 @@ const Home = () => {
       userName: firebase.auth().currentUser?.displayName || ''
     }
     sessionRef.push(session)
+    return now
+  }
+
+  const checkSetSession = () => {
+    if (sessionStart === 0) {
+      setSessionStart(createSession())
+    }
   }
 
   const createClick = () => {
     const interactRef = firebase.database().ref('Interact')
     const now = new Date().getTime()
+
+    checkSetSession()
+
     const interact = {
       time: now,
       type: 'click'
@@ -36,6 +47,9 @@ const Home = () => {
   const createKeyDown = () => {
     const interactRef = firebase.database().ref('Interact')
     const now = new Date().getTime()
+
+    checkSetSession()
+
     const interact = {
       time: now,
       type: 'keydown'
