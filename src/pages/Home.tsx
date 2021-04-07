@@ -232,7 +232,6 @@ const Home = () => {
       )
     }
   }
-
   return (
     <>
       <AppBar
