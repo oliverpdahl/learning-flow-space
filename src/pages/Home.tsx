@@ -6,7 +6,8 @@ import {
   ButtonGroup,
   Drawer,
   Chip,
-  Divider
+  Divider,
+  LinearProgress
 } from '@material-ui/core'
 import React from 'react'
 import CheckCircleIcon from '@material-ui/icons/CheckCircle'
@@ -40,14 +41,24 @@ const Home = () => {
   const [currentTool, setCurrentTool] = useState('typing')
   const [iframeLoaded, setIFrameLoaded] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [sessionLength, setSessionLength] = useState(0)
 
   const sessionRef = firebase.database().ref('Session')
   const interactRef = firebase.database().ref('Interact')
 
   const focusThreshold = 5000
   const warningThreshold = 3000
+  const goalSessionLength = 1000 * 60
 
   const updateFocusedState = () => {}
+
+  const getSessionLengthNormalized = () => {
+    const now = new Date().getTime()
+    const currentDuration = now - sessionStart
+    const currentDurationNormalized =
+      (currentDuration * 100) / goalSessionLength
+    setSessionLength(currentDurationNormalized)
+  }
 
   const closeSession = () => {
     if (!!sessionID) {
@@ -153,6 +164,7 @@ const Home = () => {
     updateFocusedState()
     getSessionStatus()
     getUsersStatuses()
+    getSessionLengthNormalized()
   }
 
   useEffect(() => {
@@ -395,6 +407,9 @@ const Home = () => {
         style={{ width: '100%', height: '100%' }}
       >
         <Wrapper>
+          <React.Fragment>
+            <LinearProgress variant='determinate' value={sessionLength} />
+          </React.Fragment>
           {focusAlert()}
           <ButtonGroup
             style={{ width: '100%', marginTop: '10px' }}
