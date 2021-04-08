@@ -42,6 +42,7 @@ const Home = () => {
   const [iframeLoaded, setIFrameLoaded] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [sessionLength, setSessionLength] = useState(0)
+  const [sessionStatus, setSessionStatus] = useState('focused')
 
   const sessionRef = firebase.database().ref('Session')
   const interactRef = firebase.database().ref('Interact')
@@ -68,6 +69,14 @@ const Home = () => {
     }
   }
 
+  const updateUser = () => {
+    const userID = firebase.auth().currentUser?.uid || ''
+    const userName = firebase.auth().currentUser?.displayName || ''
+    if (sessionID != '') {
+      sessionRef.child(sessionID).update({ userID: userID, userName: userName })
+    }
+  }
+
   const setSessionToFocused = () => {
     if (!!sessionID) {
       sessionRef.child(sessionID).update({ status: 'focused' })
@@ -87,10 +96,18 @@ const Home = () => {
   }
 
   const getSessionStatus = () => {
-    if (!!sessionID) {
-      console.log(sessionRef.child(sessionID))
-    }
-    return 'focused'
+    sessionRef
+      .orderByChild('userID')
+      .equalTo(firebase.auth().currentUser?.uid || '')
+      .limitToLast(1)
+      .on('value', snapshot => {
+        const sessions = snapshot.val()
+        const ids = []
+        for (let id in sessions) {
+          ids.push(sessions[id].status)
+        }
+        setSessionStatus(ids[0])
+      })
   }
 
   const getSessionID = () => {
@@ -116,7 +133,7 @@ const Home = () => {
       let unfocusedUsersCollect: string[] = []
       for (let id in sessions) {
         const status = sessions[id].status
-        const username = sessions[id].status
+        const username = sessions[id].userName
         if (status === 'focused') {
           focusedUsersCollect.push(username)
         } else if (status === 'warning') {
@@ -162,6 +179,7 @@ const Home = () => {
   }
 
   const handleFocus = () => {
+    updateUser()
     checkFocus()
     updateFocusedState()
     getSessionStatus()
@@ -190,10 +208,9 @@ const Home = () => {
     const now = new Date().getTime()
     const session = {
       time: now,
-      focused: false,
+      status: 'focused',
       userID: firebase.auth().currentUser?.uid || '',
-      userName: firebase.auth().currentUser?.displayName || '',
-      status: 'focused'
+      userName: firebase.auth().currentUser?.displayName || ''
     }
     sessionRef.push(session)
     getSessionID()
@@ -240,7 +257,6 @@ const Home = () => {
   }
 
   const focusAlert = () => {
-    const sessionStatus = getSessionStatus()
     if (sessionStatus === 'unfocused') {
       return (
         <Alert severity='error'>
@@ -276,10 +292,9 @@ const Home = () => {
   }
 
   const getFocusedUserMap = () => {
-    let testFocusedUsers = ['test1', 'test2', 'test3']
     return (
       <p>
-        {testFocusedUsers.map(username => (
+        {focusedUsers.map(username => (
           <Chip
             color='primary'
             style={{ marginLeft: '4px' }}
@@ -292,10 +307,9 @@ const Home = () => {
   }
 
   const getLoosingFocusUserMap = () => {
-    let testFocusedUsers = ['test1', 'test2', 'test3']
     return (
       <p>
-        {testFocusedUsers.map(username => (
+        {warningUsers.map(username => (
           <Chip
             style={{ marginLeft: '4px' }}
             label={username}
@@ -307,10 +321,9 @@ const Home = () => {
   }
 
   const getUnfocusedUserMap = () => {
-    let testFocusedUsers = ['test1', 'test2', 'test3']
     return (
       <p>
-        {testFocusedUsers.map(username => (
+        {unfocusedUsers.map(username => (
           <Chip
             color='secondary'
             style={{ marginLeft: '4px' }}
@@ -390,9 +403,13 @@ const Home = () => {
         <Drawer anchor={'right'} open={drawerOpen} onClose={setDrawerToClosed}>
           <Box m={2}>
             {getFocusedUserMap()}
-            <Divider />
+            {!!warningUsers[0] && !!focusedUsers[0] ? <Divider /> : ''}
             {getLoosingFocusUserMap()}
-            <Divider />
+            {(!!warningUsers[0] || !!focusedUsers[0]) && !!unfocusedUsers[0] ? (
+              <Divider />
+            ) : (
+              ''
+            )}
             {getUnfocusedUserMap()}
           </Box>
         </Drawer>
