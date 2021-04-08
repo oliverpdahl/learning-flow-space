@@ -9,6 +9,11 @@ import {
   Divider
 } from '@material-ui/core'
 import React from 'react'
+import CheckCircleIcon from '@material-ui/icons/CheckCircle'
+import WarningIcon from '@material-ui/icons/Warning'
+import ErrorIcon from '@material-ui/icons/Error'
+import CancelIcon from '@material-ui/icons/Cancel'
+import HighlightOffIcon from '@material-ui/icons/HighlightOff'
 import { Link } from 'react-router-dom'
 import routes from './routes'
 import Alert from '@material-ui/lab/Alert'
@@ -219,6 +224,7 @@ const Home = () => {
             color='primary'
             style={{ marginLeft: '4px' }}
             label={username}
+            icon={<CheckCircleIcon />}
           />
         ))}
       </p>
@@ -230,7 +236,11 @@ const Home = () => {
     return (
       <p>
         {testFocusedUsers.map(username => (
-          <Chip style={{ marginLeft: '4px' }} label={username} />
+          <Chip
+            style={{ marginLeft: '4px' }}
+            label={username}
+            icon={<ErrorIcon />}
+          />
         ))}
       </p>
     )
@@ -245,6 +255,7 @@ const Home = () => {
             color='secondary'
             style={{ marginLeft: '4px' }}
             label={username}
+            icon={<CancelIcon />}
           />
         ))}
       </p>
