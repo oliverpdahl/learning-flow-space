@@ -27,6 +27,22 @@ const AppBar = (props: Props) => {
     threshold: 40
   })
 
+  const ProgressBar = () => {
+    if (props.sessionLength != 0) {
+      return (
+        <React.Fragment>
+          <LinearProgress variant='determinate' value={props.sessionLength} />
+        </React.Fragment>
+      )
+    } else {
+      return (
+        <React.Fragment>
+          {/* <LinearProgress variant='determinate' value={0} /> */}
+        </React.Fragment>
+      )
+    }
+  }
+
   return (
     <MaterialAppBar
       elevation={trigger ? 4 : 0}
@@ -48,9 +64,7 @@ const AppBar = (props: Props) => {
           <img src={logo} style={{ height: '5vh' }} alt='Logo' />
         )}
         <Box mx={3} flex='auto'>
-          <React.Fragment>
-            <LinearProgress variant='determinate' value={props.sessionLength} />
-          </React.Fragment>
+          {ProgressBar()}
         </Box>
         {props.actions}
       </Toolbar>
