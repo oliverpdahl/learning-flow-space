@@ -7,6 +7,8 @@ import {
 } from '@material-ui/core'
 import { Link } from 'react-router-dom'
 import routes from './routes'
+import Alert from '@material-ui/lab/Alert'
+import AlertTitle from '@material-ui/lab/AlertTitle'
 import Wrapper from '../components/Wrapper'
 import AppBar from '../components/AppBar'
 import { useForm } from 'react-hook-form'
@@ -18,17 +20,20 @@ import { noWait } from 'recoil'
 const Home = () => {
   const { register, errors, handleSubmit, reset } = useForm<{ name: string }>()
   const [sessionStart, setSessionStart] = useState(0)
-  const [focusedState, setFocusedState] = useState(false)
+  const [focusedState, setFocusedState] = useState(true)
+  const [focusedWarningState, setFocusedWarningState] = useState(false)
   const [focusLock, setFocusLock] = useState(false)
   const [sessionID, setSessionID] = useState('')
   let stringArray: string[] = []
   const [focusedUsers, setFocusedUsers] = useState(stringArray)
   const [currentTool, setCurrentTool] = useState('typing')
+  const [iframeLoaded, setIFrameLoaded] = useState(false)
 
   const sessionRef = firebase.database().ref('Session')
   const interactRef = firebase.database().ref('Interact')
 
   const focusThreshold = 5000
+  const warningThreshold = 3000
 
   const updateFocusedState = () => {
     if (!!sessionID) {
@@ -83,11 +88,15 @@ const Home = () => {
             const dif = now - t1
             if (dif > focusThreshold) {
               setFocusedState(false)
+            } else if (dif > warningThreshold) {
+              setFocusedWarningState(true)
             } else {
               setFocusedState(true)
+              setFocusedWarningState(false)
             }
           } else {
-            setFocusedState(false)
+            setFocusedState(true)
+            setFocusedWarningState(false)
           }
         }
       })
@@ -109,24 +118,6 @@ const Home = () => {
       }
       setFocusLock(true)
     })
-    /*window.addEventListener('keydown', createKeyDown)
-    window.addEventListener('click', createClick)
-
-    var myConfObj = {
-      iframeMouseOver : false
-    }
-    window.addEventListener('blur',function(){
-      if(myConfObj.iframeMouseOver){
-        console.log('Wow! Iframe Click!');
-      }
-    });
-    
-    document.getElementById('embeddedTool')?.addEventListener('mouseover',function(){
-       myConfObj.iframeMouseOver = true;
-    });
-    document.getElementById('embeddedTool')?.addEventListener('mouseout',function(){
-        myConfObj.iframeMouseOver = false;
-    });*/
 
     return () => {
       clearInterval(timer)
@@ -166,8 +157,6 @@ const Home = () => {
     interactRef.push(interact)
   }
 
-  //test comment here
-
   const createKeyDown = () => {
     const now = new Date().getTime()
 
@@ -185,6 +174,33 @@ const Home = () => {
   const sessionStartAsDate = () => {
     const date = new Date(sessionStart)
     return date.toString()
+  }
+
+  const focusAlert = () => {
+    if (!focusedState) {
+      return (
+        <Alert severity='error'>
+          <AlertTitle>Unfocused</AlertTitle>
+          You might have left the page and have lost your focus — to restart
+          your focus <strong>Click Here!</strong>
+        </Alert>
+      )
+    } else if (focusedWarningState) {
+      return (
+        <Alert severity='warning'>
+          <AlertTitle>Check In</AlertTitle>
+          <strong>Click Here </strong> to check in and show that you are still
+          on the page — <strong>don't loose your focus!</strong>
+        </Alert>
+      )
+    } else {
+      return (
+        <Alert severity='success'>
+          <AlertTitle>Focused</AlertTitle>
+          You're doing great — <strong>keep it up!</strong>
+        </Alert>
+      )
+    }
   }
 
   const getFocusedUserString = () => {
@@ -264,11 +280,9 @@ const Home = () => {
               ? ''
               : 'Session Started at ' + sessionStartAsDate()}
           </Typography>
-          <Typography paragraph>
-            {focusedState ? 'FOCUSED' : 'FOCUS UP NOW!!'}
-          </Typography>
+          {focusAlert()}
           <ButtonGroup
-            style={{ width: '100%' }}
+            style={{ width: '100%', marginTop: '10px' }}
             variant='contained'
             size='large'
             color='primary'
