@@ -55,9 +55,11 @@ const Home = () => {
   const getSessionLengthNormalized = () => {
     const now = new Date().getTime()
     const currentDuration = now - sessionStart
-    const currentDurationNormalized =
-      (currentDuration * 100) / goalSessionLength
-    setSessionLength(currentDurationNormalized)
+    var lengthtoget = 100
+    if (currentDuration < goalSessionLength) {
+      lengthtoget = (currentDuration * 100) / goalSessionLength
+    }
+    setSessionLength(lengthtoget)
   }
 
   const closeSession = () => {
