@@ -35,6 +35,8 @@ const Home = () => {
   const [sessionID, setSessionID] = useState('')
   let stringArray: string[] = []
   const [focusedUsers, setFocusedUsers] = useState(stringArray)
+  const [warningUsers, setWarningUsers] = useState(stringArray)
+  const [unfocusedUsers, setUnfocusedUsers] = useState(stringArray)
   const [currentTool, setCurrentTool] = useState('typing')
   const [iframeLoaded, setIFrameLoaded] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -45,10 +47,37 @@ const Home = () => {
   const focusThreshold = 5000
   const warningThreshold = 3000
 
-  const updateFocusedState = () => {
+  const updateFocusedState = () => {}
+
+  const closeSession = () => {
     if (!!sessionID) {
-      sessionRef.child(sessionID).update({ focused: focusedState })
+      sessionRef.child(sessionID).update({ status: 'closed' })
     }
+  }
+
+  const setSessionToFocused = () => {
+    if (!!sessionID) {
+      sessionRef.child(sessionID).update({ status: 'focused' })
+    }
+  }
+
+  const setSessionToWarning = () => {
+    if (!!sessionID) {
+      sessionRef.child(sessionID).update({ status: 'warning' })
+    }
+  }
+
+  const setSessionToUnfocused = () => {
+    if (!!sessionID) {
+      sessionRef.child(sessionID).update({ status: 'unfocused' })
+    }
+  }
+
+  const getSessionStatus = () => {
+    if (!!sessionID) {
+      console.log(sessionRef.child(sessionID))
+    }
+    return 'focused'
   }
 
   const getSessionID = () => {
@@ -66,18 +95,27 @@ const Home = () => {
       })
   }
 
-  const getFocusedUsers = () => {
-    sessionRef
-      .orderByChild('focused')
-      .equalTo(true)
-      .on('value', snapshot => {
-        const sessions = snapshot.val()
-        let focusedUsersCollect: string[] = []
-        for (let id in sessions) {
-          focusedUsersCollect.push(sessions[id].userName)
+  const getUsersStatuses = () => {
+    sessionRef.orderByChild('status').on('value', snapshot => {
+      const sessions = snapshot.val()
+      let focusedUsersCollect: string[] = []
+      let warningUserCollect: string[] = []
+      let unfocusedUsersCollect: string[] = []
+      for (let id in sessions) {
+        const status = sessions[id].status
+        const username = sessions[id].status
+        if (status === 'focused') {
+          focusedUsersCollect.push(username)
+        } else if (status === 'warning') {
+          warningUserCollect.push(username)
+        } else if (status === 'unfocused') {
+          warningUserCollect.push(username)
         }
-        setFocusedUsers(focusedUsersCollect)
-      })
+      }
+      setFocusedUsers(focusedUsersCollect)
+      setWarningUsers(warningUserCollect)
+      setUnfocusedUsers(unfocusedUsersCollect)
+    })
   }
 
   const checkFocus = () => {
@@ -97,16 +135,14 @@ const Home = () => {
             const now = new Date().getTime()
             const dif = now - t1
             if (dif > focusThreshold) {
-              setFocusedState(false)
+              setSessionToUnfocused()
             } else if (dif > warningThreshold) {
-              setFocusedWarningState(true)
+              setSessionToWarning()
             } else {
-              setFocusedState(true)
-              setFocusedWarningState(false)
+              setSessionToFocused()
             }
           } else {
-            setFocusedState(true)
-            setFocusedWarningState(false)
+            setSessionToFocused()
           }
         }
       })
@@ -115,7 +151,8 @@ const Home = () => {
   const handleFocus = () => {
     checkFocus()
     updateFocusedState()
-    getFocusedUsers()
+    getSessionStatus()
+    getUsersStatuses()
   }
 
   useEffect(() => {
@@ -126,6 +163,7 @@ const Home = () => {
       if (!!sessionID) {
         sessionRef.child(sessionID).update({ focused: false })
       }
+      closeSession()
       setFocusLock(true)
     })
 
@@ -140,7 +178,8 @@ const Home = () => {
       time: now,
       focused: false,
       userID: firebase.auth().currentUser?.uid || '',
-      userName: firebase.auth().currentUser?.displayName || ''
+      userName: firebase.auth().currentUser?.displayName || '',
+      status: 'focused'
     }
     sessionRef.push(session)
     getSessionID()
@@ -187,7 +226,8 @@ const Home = () => {
   }
 
   const focusAlert = () => {
-    if (!focusedState) {
+    const sessionStatus = getSessionStatus()
+    if (sessionStatus === 'unfocused') {
       return (
         <Alert severity='error'>
           <AlertTitle>Unfocused</AlertTitle>
@@ -195,7 +235,7 @@ const Home = () => {
           your focus <strong>Click Here!</strong>
         </Alert>
       )
-    } else if (focusedWarningState) {
+    } else if (sessionStatus === 'warning') {
       return (
         <Alert severity='warning'>
           <AlertTitle>Check In</AlertTitle>
@@ -203,7 +243,7 @@ const Home = () => {
           on the page — <strong>don't loose your focus!</strong>
         </Alert>
       )
-    } else {
+    } else if (sessionStatus === 'focused') {
       return (
         <Alert severity='success'>
           <AlertTitle>Focused</AlertTitle>
@@ -212,6 +252,12 @@ const Home = () => {
           is active!
         </Alert>
       )
+    } else {
+      ;<Alert severity='info'>
+        <AlertTitle>No Active Session</AlertTitle>
+        No active session
+        <strong onClick={setDrawerToOpen}>Click Here</strong> start one.
+      </Alert>
     }
   }
 
