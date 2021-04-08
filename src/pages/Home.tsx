@@ -173,7 +173,7 @@ const Home = () => {
 
   const sessionStartAsDate = () => {
     const date = new Date(sessionStart)
-    return date.toString()
+    return date.toLocaleString()
   }
 
   const focusAlert = () => {
@@ -253,7 +253,11 @@ const Home = () => {
   return (
     <>
       <AppBar
-        title=''
+        title={
+          sessionStart === 0
+            ? ''
+            : 'Focus Session Started on ' + sessionStartAsDate()
+        }
         actions={
           <Button
             color='primary'
@@ -275,11 +279,6 @@ const Home = () => {
       >
         <Wrapper>
           <Typography paragraph>{getFocusedUserString()}</Typography>
-          <Typography paragraph>
-            {sessionStart === 0
-              ? ''
-              : 'Session Started at ' + sessionStartAsDate()}
-          </Typography>
           {focusAlert()}
           <ButtonGroup
             style={{ width: '100%', marginTop: '10px' }}
