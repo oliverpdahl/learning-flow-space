@@ -3,8 +3,12 @@ import {
   Typography,
   TextField,
   Button,
-  ButtonGroup
+  ButtonGroup,
+  Drawer,
+  Chip,
+  Divider
 } from '@material-ui/core'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import routes from './routes'
 import Alert from '@material-ui/lab/Alert'
@@ -28,6 +32,7 @@ const Home = () => {
   const [focusedUsers, setFocusedUsers] = useState(stringArray)
   const [currentTool, setCurrentTool] = useState('typing')
   const [iframeLoaded, setIFrameLoaded] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const sessionRef = firebase.database().ref('Session')
   const interactRef = firebase.database().ref('Interact')
@@ -197,18 +202,53 @@ const Home = () => {
       return (
         <Alert severity='success'>
           <AlertTitle>Focused</AlertTitle>
-          You're doing great — <strong>keep it up!</strong>
+          You're doing great —{' '}
+          <strong onClick={setDrawerToOpen}>Click Here</strong> to see who else
+          is active!
         </Alert>
       )
     }
   }
 
-  const getFocusedUserString = () => {
-    let focusedUserString = ''
-    for (var username of focusedUsers) {
-      focusedUserString += username + ' is focused | '
-    }
-    return focusedUserString
+  const getFocusedUserMap = () => {
+    let testFocusedUsers = ['test1', 'test2', 'test3']
+    return (
+      <p>
+        {testFocusedUsers.map(username => (
+          <Chip
+            color='primary'
+            style={{ marginLeft: '4px' }}
+            label={username}
+          />
+        ))}
+      </p>
+    )
+  }
+
+  const getLoosingFocusUserMap = () => {
+    let testFocusedUsers = ['test1', 'test2', 'test3']
+    return (
+      <p>
+        {testFocusedUsers.map(username => (
+          <Chip style={{ marginLeft: '4px' }} label={username} />
+        ))}
+      </p>
+    )
+  }
+
+  const getUnfocusedUserMap = () => {
+    let testFocusedUsers = ['test1', 'test2', 'test3']
+    return (
+      <p>
+        {testFocusedUsers.map(username => (
+          <Chip
+            color='secondary'
+            style={{ marginLeft: '4px' }}
+            label={username}
+          />
+        ))}
+      </p>
+    )
   }
 
   const setToolToTyping = () => {
@@ -250,6 +290,15 @@ const Home = () => {
       )
     }
   }
+
+  const setDrawerToOpen = () => {
+    setDrawerOpen(true)
+  }
+
+  const setDrawerToClosed = () => {
+    setDrawerOpen(false)
+  }
+
   return (
     <>
       <AppBar
@@ -270,6 +319,17 @@ const Home = () => {
           </Button>
         }
       />
+      <React.Fragment key={'right'}>
+        <Drawer anchor={'right'} open={drawerOpen} onClose={setDrawerToClosed}>
+          <Box m={2}>
+            {getFocusedUserMap()}
+            <Divider />
+            {getLoosingFocusUserMap()}
+            <Divider />
+            {getUnfocusedUserMap()}
+          </Box>
+        </Drawer>
+      </React.Fragment>
       <div
         id='wrapperDiv'
         tabIndex={0}
@@ -278,7 +338,6 @@ const Home = () => {
         style={{ width: '100%', height: '100%' }}
       >
         <Wrapper>
-          <Typography paragraph>{getFocusedUserString()}</Typography>
           {focusAlert()}
           <ButtonGroup
             style={{ width: '100%', marginTop: '10px' }}
