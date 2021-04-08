@@ -5,14 +5,17 @@ import {
   Toolbar,
   Typography,
   IconButton,
-  useScrollTrigger
+  useScrollTrigger,
+  LinearProgress
 } from '@material-ui/core'
+import React from 'react'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import { Link } from 'react-router-dom'
 import NightsStayIcon from '@material-ui/icons/NightsStayOutlined'
 import logo from '../logo.png'
 
 type Props = {
+  sessionLength?: number
   title?: string
   backTo?: string
   actions?: ReactNode
@@ -44,8 +47,10 @@ const AppBar = (props: Props) => {
         {!props.backTo && (
           <img src={logo} style={{ height: '5vh' }} alt='Logo' />
         )}
-        <Box ml={3} flex='auto'>
-          <Typography variant='h6'>{props.title}</Typography>
+        <Box mx={3} flex='auto'>
+          <React.Fragment>
+            <LinearProgress variant='determinate' value={props.sessionLength} />
+          </React.Fragment>
         </Box>
         {props.actions}
       </Toolbar>

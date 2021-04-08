@@ -373,11 +373,7 @@ const Home = () => {
   return (
     <>
       <AppBar
-        title={
-          sessionStart === 0
-            ? ''
-            : 'Focus Session Started on ' + sessionStartAsDate()
-        }
+        sessionLength={sessionLength}
         actions={
           <Button
             color='primary'
@@ -409,9 +405,6 @@ const Home = () => {
         style={{ width: '100%', height: '100%' }}
       >
         <Wrapper>
-          <React.Fragment>
-            <LinearProgress variant='determinate' value={sessionLength} />
-          </React.Fragment>
           {focusAlert()}
           <ButtonGroup
             style={{ width: '100%', marginTop: '10px' }}
