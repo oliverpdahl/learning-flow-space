@@ -1,20 +1,15 @@
 import {
   Box,
-  Typography,
-  TextField,
   Button,
   ButtonGroup,
   Drawer,
   Chip,
-  Divider,
-  LinearProgress
+  Divider
 } from '@material-ui/core'
 import React from 'react'
 import CheckCircleIcon from '@material-ui/icons/CheckCircle'
-import WarningIcon from '@material-ui/icons/Warning'
 import ErrorIcon from '@material-ui/icons/Error'
 import CancelIcon from '@material-ui/icons/Cancel'
-import HighlightOffIcon from '@material-ui/icons/HighlightOff'
 import { Link } from 'react-router-dom'
 import routes from './routes'
 import Alert from '@material-ui/lab/Alert'
@@ -24,14 +19,9 @@ import AppBar from '../components/AppBar'
 import { useForm } from 'react-hook-form'
 import firebase from '../firebase'
 import { useEffect, useState } from 'react'
-import formErrorMessages from '../utils/formErrorMessages'
-import { noWait } from 'recoil'
 
 const Home = () => {
-  const { register, errors, handleSubmit, reset } = useForm<{ name: string }>()
   const [sessionStart, setSessionStart] = useState(0)
-  const [focusedState, setFocusedState] = useState(true)
-  const [focusedWarningState, setFocusedWarningState] = useState(false)
   const [focusLock, setFocusLock] = useState(false)
   const [sessionID, setSessionID] = useState('')
   let stringArray: string[] = []
@@ -39,7 +29,6 @@ const Home = () => {
   const [warningUsers, setWarningUsers] = useState(stringArray)
   const [unfocusedUsers, setUnfocusedUsers] = useState(stringArray)
   const [currentTool, setCurrentTool] = useState('typing')
-  const [iframeLoaded, setIFrameLoaded] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [sessionLength, setSessionLength] = useState(0)
   const [sessionStatus, setSessionStatus] = useState('focused')
@@ -51,8 +40,6 @@ const Home = () => {
   const warningThreshold = 3000
   const goalSessionLength = 1000 * 60
 
-  const updateFocusedState = () => {}
-
   const getSessionLengthNormalized = () => {
     const now = new Date().getTime()
     const currentDuration = now - sessionStart
@@ -63,29 +50,16 @@ const Home = () => {
     setSessionLength(lengthtoget)
   }
 
-  const closeSession = () => {
-    if (!!sessionID) {
-      sessionRef.child(sessionID).update({ status: 'closed' })
-    }
-  }
-
   const updateUser = () => {
     const userID = firebase.auth().currentUser?.uid || ''
     const userName = firebase.auth().currentUser?.displayName || ''
-    if (sessionID != '') {
-      sessionRef.child(sessionID).update({ userID: userID, userName: userName })
-    }
+    return { userID: userID, userName: userName }
   }
 
-  const setSessionToFocused = () => {
+  const updateSessionStatus = (status: string) => {
+    const userInfo = updateUser()
     if (!!sessionID) {
-      sessionRef.child(sessionID).update({ status: 'focused' })
-    }
-  }
-
-  const setSessionToWarning = () => {
-    if (!!sessionID) {
-      sessionRef.child(sessionID).update({ status: 'warning' })
+      sessionRef.child(sessionID).update({ status: status, ...userInfo })
     }
   }
 
@@ -165,14 +139,14 @@ const Home = () => {
             const now = new Date().getTime()
             const dif = now - t1
             if (dif > focusThreshold) {
-              setSessionToUnfocused()
+              updateSessionStatus('unfocused')
             } else if (dif > warningThreshold) {
-              setSessionToWarning()
+              updateSessionStatus('warning')
             } else {
-              setSessionToFocused()
+              updateSessionStatus('focused')
             }
           } else {
-            setSessionToFocused()
+            updateSessionStatus('focused')
           }
         }
       })
@@ -181,7 +155,6 @@ const Home = () => {
   const handleFocus = () => {
     updateUser()
     checkFocus()
-    updateFocusedState()
     getSessionStatus()
     getUsersStatuses()
     getSessionLengthNormalized()
@@ -195,7 +168,7 @@ const Home = () => {
       if (!!sessionID) {
         sessionRef.child(sessionID).update({ focused: false })
       }
-      closeSession()
+      updateSessionStatus('closed')
       setFocusLock(true)
     })
 
@@ -395,7 +368,7 @@ const Home = () => {
             to={routes.signin}
             variant='contained'
           >
-            Sign In
+            {!!firebase.auth().currentUser ? 'Log Out' : 'Sign In or Sign Up'}
           </Button>
         }
       />
