@@ -36,9 +36,9 @@ const Home = () => {
   const sessionRef = firebase.database().ref('Session')
   const interactRef = firebase.database().ref('Interact')
 
-  const focusThreshold = 5000
-  const warningThreshold = 3000
-  const goalSessionLength = 1000 * 60
+  const focusThreshold = 5000 * 60
+  const warningThreshold = 3000 * 60
+  const goalSessionLength = 25000 * 60
 
   const getSessionLengthNormalized = () => {
     const now = new Date().getTime()
@@ -113,7 +113,7 @@ const Home = () => {
         } else if (status === 'warning') {
           warningUserCollect.push(username)
         } else if (status === 'unfocused') {
-          warningUserCollect.push(username)
+          unfocusedUsersCollect.push(username)
         }
       }
       setFocusedUsers(focusedUsersCollect)
@@ -163,7 +163,7 @@ const Home = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       handleFocus()
-    }, 1000)
+    }, 5000)
     window.addEventListener('beforeunload', ev => {
       if (!!sessionID) {
         sessionRef.child(sessionID).update({ focused: false })
@@ -269,10 +269,9 @@ const Home = () => {
       <p>
         {focusedUsers.map(username => (
           <Chip
-            color='primary'
-            style={{ marginLeft: '4px' }}
+            style={{ margin: '2px', backgroundColor: '#edf7ed' }}
             label={username}
-            icon={<CheckCircleIcon />}
+            icon={<CheckCircleIcon style={{ color: '#81c683' }} />}
           />
         ))}
       </p>
@@ -284,9 +283,9 @@ const Home = () => {
       <p>
         {warningUsers.map(username => (
           <Chip
-            style={{ marginLeft: '4px' }}
+            style={{ margin: '2px', backgroundColor: '#fff4e5' }}
             label={username}
-            icon={<ErrorIcon />}
+            icon={<ErrorIcon style={{ color: '#ffa12e' }} />}
           />
         ))}
       </p>
@@ -298,10 +297,9 @@ const Home = () => {
       <p>
         {unfocusedUsers.map(username => (
           <Chip
-            color='secondary'
-            style={{ marginLeft: '4px' }}
+            style={{ margin: '2px', backgroundColor: '#fdecea' }}
             label={username}
-            icon={<CancelIcon />}
+            icon={<CancelIcon style={{ color: '#f5655b' }} />}
           />
         ))}
       </p>
@@ -374,7 +372,7 @@ const Home = () => {
       />
       <React.Fragment key={'right'}>
         <Drawer anchor={'right'} open={drawerOpen} onClose={setDrawerToClosed}>
-          <Box m={2}>
+          <Box m={2} width='20vw'>
             {getFocusedUserMap()}
             {!!warningUsers[0] && !!focusedUsers[0] ? <Divider /> : ''}
             {getLoosingFocusUserMap()}
@@ -392,7 +390,7 @@ const Home = () => {
         tabIndex={0}
         onClick={createClick}
         onKeyDown={createKeyDown}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%', userSelect: 'none' }}
       >
         <Wrapper>
           {focusAlert()}
